@@ -5,14 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AI Essentials -- Talk to the Agent</title>
     <style>
-      html, body { margin: 0; padding: 0; height: 100%; background: transparent; }
-      body { display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-      .note { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 12px; color: #6b7280; }
+      html, body { margin: 0; padding: 0; height: 100%; background: transparent; overflow: hidden; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+      /* The widget itself is position:fixed inside its shadow root, so it always
+         covers the full iframe viewport. The sizing override below makes the
+         conversation sheet fill that space instead of floating at 400x550. */
     </style>
   </head>
   <body>
-    <elevenlabs-convai agent-id="agent_4001m269sgbaekjsmned83s8fy3d"></elevenlabs-convai>
+    <elevenlabs-convai
+      agent-id="agent_4001m269sgbaekjsmned83s8fy3d"
+      always-expanded="true"
+      show-resize-button="false"
+      placement="bottom"
+    ></elevenlabs-convai>
     <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-    <p class="note">If the microphone button does not appear, allow microphone access for this page.</p>
+    <script>
+      // Make the ElevenLabs sheet take the entire block (like the old GPT Trainer embed).
+      // The widget renders into an open shadow root, so we drop an override stylesheet in there.
+      (function () {
+        var CSS = [
+          ':host{--el-overlay-padding:8px !important;}',
+          '.overlay{inset:8px !important;}',
+          '.sheet[data-variant]{width:100% !important;max-width:none !important;',
+          '  height:100% !important;max-height:none !important;margin:0 !important;}'
+        ].join('\n');
+        function inject(el) {
+          var root = el.shadowRoot;
+          if (!root) return false;
+          if (root.querySelector('style[data-fill-block]')) return true;
+          var s = document.createElement('style');
+          s.setAttribute('data-fill-block', '');
+          s.textContent = CSS;
+          root.appendChild(s);
+          return true;
+        }
+        function start() {
+          var el = document.querySelector('elevenlabs-convai');
+          if (!el) return;
+          if (inject(el)) return;
+          var tries = 0;
+          var t = setInterval(function () {
+            if (inject(el) || ++tries > 200) clearInterval(t);
+          }, 100);
+        }
+        if (window.customElements && customElements.whenDefined) {
+          customElements.whenDefined('elevenlabs-convai').then(start, start);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', start);
+        } else {
+          start();
+        }
+      })();
+    </script>
   </body>
 </html>
