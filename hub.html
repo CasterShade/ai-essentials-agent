@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Cohort Hub</title>
+    <!--
+      Cohort Hub door. Courses embed THIS page:
+        <iframe src="https://castershade.github.io/ai-essentials-agent/hub.html?hub=chah-2026&space=question-box" ...>
+      hubs.json decides what happens:
+        status "pending" -> the placeholder below (safe to ship in a course before the hub is hosted)
+        status "active"  -> this frame is sent to <baseUrl>/embed?cohort=..&course=..&space=..
+        status "paused"  -> a short "back soon" note
+      When the hub gets its URL (or moves to another host), run scripts/set-hub-url.ps1 and publish.
+      Nothing inside any course is edited again.
+    -->
+    <style>
+      html, body { margin: 0; height: 100%; }
+      body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #1b1f24;
+        display: flex; align-items: center; justify-content: center; }
+      .card { box-sizing: border-box; width: min(560px, calc(100% - 32px)); padding: 28px 28px 24px; background: #fff;
+        border: 1px solid #e3e7ec; border-radius: 16px; box-shadow: 0 8px 28px rgba(15,22,34,.08); text-align: center; }
+      .card[hidden] { display: none; }
+      .chest { width: 84px; height: 84px; margin: 0 auto 10px; display: block; }
+      h1 { margin: 0 0 8px; font-size: 21px; color: #1f3a5f; }
+      p { margin: 0 0 10px; font-size: 15px; line-height: 1.5; color: #3a4350; }
+      .spaces { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0 4px; padding: 0; list-style: none; }
+      .spaces li { font-size: 12.5px; font-weight: 600; color: #1f3a5f; background: #eef4ff; border: 1px solid #c9d9f2; border-radius: 999px; padding: 5px 11px; }
+      .tiny { font-size: 12.5px; color: #6a7380; margin-top: 12px; }
+      #hub-debug { position: fixed; left: 8px; bottom: 8px; max-width: 70%; margin: 0; padding: 8px; font-size: 11px;
+        background: rgba(15,22,34,.92); color: #e7edf5; border-radius: 8px; white-space: pre-wrap; word-break: break-all; }
+    </style>
+  </head>
+  <body>
+    <main class="card" id="hub-card" hidden aria-live="polite">
+      <svg class="chest" viewBox="0 0 96 96" role="img" aria-label="Treasure chest">
+        <rect x="14" y="44" width="68" height="34" rx="5" fill="#9a6a3a"/>
+        <path d="M14 46c0-14 10-24 34-24s34 10 34 24v2H14z" fill="#b98148"/>
+        <rect x="14" y="44" width="68" height="7" fill="#6f4a25"/>
+        <rect x="24" y="22" width="7" height="56" fill="#f0b429"/><rect x="65" y="22" width="7" height="56" fill="#f0b429"/>
+        <rect x="41" y="41" width="14" height="17" rx="3" fill="#f0b429"/><circle cx="48" cy="48" r="2.6" fill="#6f4a25"/><rect x="47" y="49" width="2" height="5" fill="#6f4a25"/>
+      </svg>
+      <h1 id="hub-title">Your Cohort Hub</h1>
+      <p id="hub-message"></p>
+      <ul class="spaces" id="hub-spaces">
+        <li>Question Box</li><li>This Week</li><li>Wins &amp; Shares</li><li>Announcements</li>
+      </ul>
+      <p class="tiny" id="hub-tiny"></p>
+    </main>
+    <script src="hub.js"></script>
+    <noscript>The Cohort Hub needs JavaScript.</noscript>
+  </body>
+</html>

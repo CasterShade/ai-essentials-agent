@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Agent Embed Builder -- YU Global</title>
+<style>
+  :root{--navy:#1f3a5f;--navy2:#2b5285;--ink:#1b1f24;--muted:#5b6470;--line:#e3e7ec;--bg:#f5f7fa;--card:#fff;--ok:#1d7a4d;--warn:#7a5b1d}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:22px;margin:0 0 4px;color:var(--navy)} header p{margin:0;color:var(--muted);font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:20px}
+  label{display:block;font-weight:600;font-size:13px;margin:0 0 6px} .hint{font-weight:400;color:var(--muted)}
+  input[type=text],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;margin-bottom:16px;background:#fff}
+  .row{display:flex;gap:16px;flex-wrap:wrap} .row>div{flex:1;min-width:220px}
+  .block h3{font-size:14px;margin:0 0 8px;color:var(--navy);display:flex;align-items:center;justify-content:space-between}
+  .tag{font-weight:600;font-size:11px;color:#fff;background:var(--navy2);padding:2px 8px;border-radius:999px}
+  pre{margin:0;background:#0f1622;color:#e7edf5;border-radius:10px;padding:14px;overflow:auto;font-size:12.5px;font-family:Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+  .btn{appearance:none;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--accent,#2b5285);color:#fff}
+  .btn.copy{background:#eef2f7;color:var(--navy);border:1px solid var(--line)} .btn.copy:hover{background:#e3eaf3}
+  .barhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .ok{color:var(--ok);font-size:12px;font-weight:600;margin-left:8px;opacity:0;transition:opacity .2s} .ok.show{opacity:1}
+  .warnbox{background:#fff7e6;border:1px solid #f0c36d;color:#5c3d00;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:10px}
+  table{border-collapse:collapse;width:100%;font-size:13px} td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  code.inline{background:#eef2f7;padding:1px 5px;border-radius:4px;font-size:12px}
+  .preview{border:1px dashed var(--line);border-radius:10px;overflow:hidden;height:420px;background:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Agent Embed Builder</h1>
+    <p>Pick an agent <em>key</em> and copy the snippet. Courses never carry a provider id: if the agent behind a key changes, the course keeps working. YU Global &middot; internal.</p>
+  </header>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Agent <span class="hint">(from registry.json)</span></label>
+        <select id="agent"></select>
+      </div>
+      <div>
+        <label>Where will it go?</label>
+        <select id="kind">
+          <option value="block">Inside a lesson (Rise / Canvas / SCORM) -- iframe block</option>
+          <option value="bubble">Floating bubble on a whole site (Thinkific footer code)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>Course ID <span class="hint">(optional, e.g. MAR 2501)</span></label><input type="text" id="course_id" autocomplete="off" /></div>
+      <div><label>Course name <span class="hint">(optional)</span></label><input type="text" id="course_name" autocomplete="off" /></div>
+    </div>
+    <div class="row">
+      <div><label>Lesson activity <span class="hint">(tells the agent which page it is on)</span></label>
+        <select id="module_sel"></select>
+        <input type="text" id="module" autocomplete="off" placeholder="module (free text)" style="display:none" /></div>
+      <div><label>Language <span class="hint">(en / es -- only used if the agent allows it)</span></label><input type="text" id="lang" autocomplete="off" placeholder="en" /></div>
+      <div><label>Height (px, block only)</label><input type="text" id="height" value="600" autocomplete="off" /></div>
+    </div>
+    <div id="agentinfo" class="hint"></div>
+    <div id="ctxinfo" class="hint" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card block">
+    <div class="barhead"><h3 style="margin:0">Embed snippet <span class="tag" id="kindtag">iframe</span></h3>
+      <div><button class="btn copy" data-copy="out">Copy</button><span class="ok" id="ok-out">Copied</span></div></div>
+    <pre id="out"></pre>
+    <div class="warnbox" id="micnote"><b>Keep <code class="inline">allow="microphone"</code></b> on the iframe. Voice agents cannot ask for the mic inside an iframe without it, and the failure is silent.</div>
+  </div>
+
+  <div class="card block">
+    <div class="barhead"><h3 style="margin:0">Live preview</h3><a class="btn copy" id="openlink" href="#" target="_blank" rel="noopener">Open in new tab</a></div>
+    <div class="preview"><iframe id="preview" src="about:blank" style="width:100%;height:100%;border:0" allow="microphone"></iframe></div>
+  </div>
+
+  <div class="card block">
+    <div class="barhead"><h3 style="margin:0">Cohort Hub block <span class="tag">iframe</span></h3>
+      <div><button class="btn copy" data-copy="hubout">Copy</button><span class="ok" id="ok-hubout">Copied</span></div></div>
+    <div class="row">
+      <div><label>Hub</label><select id="hub"></select></div>
+      <div><label>Opens on</label><select id="hubspace">
+        <option value="question-box">Question Box</option><option value="this-week">This Week (weekly prompt)</option>
+        <option value="wins">Wins &amp; Shares</option><option value="announcements">Announcements</option></select></div>
+      <div><label>Course slug <span class="hint">(tags posts)</span></label><input type="text" id="hubcourse" value="ai-essentials-hs" autocomplete="off" /></div>
+    </div>
+    <pre id="hubout"></pre>
+    <p class="hint" id="hubinfo" style="margin:10px 0 0"></p>
+  </div>
+
+  <div class="card block">
+    <h3 style="margin:0 0 8px">Registry (what each key points at right now)</h3>
+    <table id="regtable"><thead><tr><th>Key</th><th>Provider</th><th>Status</th><th>Aliases</th><th>Used in</th></tr></thead><tbody></tbody></table>
+    <p class="hint" style="margin:10px 0 0">To change any of this, edit <code class="inline">registry.json</code> on GitHub. Changes are live within about 10 minutes; nothing in any course needs to change.</p>
+  </div>
+</div>
+<script>
+  var $ = function (id) { return document.getElementById(id); };
+  var BASE = location.href.replace(/builder\.html.*$/, '');
+  var REG = null;
+  function esc(v) { return String(v || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+  function q(obj) { return Object.keys(obj).filter(function(k){return obj[k]!=='';}).map(function(k){return k+'='+encodeURIComponent(obj[k]);}).join('&'); }
+  function render() {
+    if (!REG) return;
+    var key = $('agent').value, kind = $('kind').value;
+    var e = REG.agents[key] || {};
+    var ctxs = e.contexts || null;
+    var msel = $('module_sel');
+    if (msel.getAttribute('data-for') !== key) {
+      msel.innerHTML = ''; msel.setAttribute('data-for', key);
+      if (ctxs) Object.keys(ctxs).forEach(function (ck) { var o = document.createElement('option'); o.value = ck === 'default' ? '' : ck; o.textContent = (ck === 'default' ? '(general help -- no specific activity)' : ck + ' -- ' + (ctxs[ck].title || ctxs[ck].lesson || '')); msel.appendChild(o); });
+      msel.style.display = ctxs ? '' : 'none'; $('module').style.display = ctxs ? 'none' : '';
+    }
+    var moduleVal = ctxs ? msel.value : $('module').value.trim();
+    var c = ctxs && (ctxs[moduleVal] || ctxs['default']);
+    $('ctxinfo').innerHTML = c ? ('<b>What the agent is told on this page:</b> ' + esc(c.activity) + (c.steps && c.steps.length ? '<br><b>Steps shown to the student:</b> ' + esc(c.steps.join(' / ')) : '')) : '';
+    var vars = { agent: key, course_id: $('course_id').value.trim(), course_name: $('course_name').value.trim(), module: moduleVal, lang: $('lang').value.trim() };
+    var h = parseInt($('height').value, 10) || 600;
+    var url = BASE + '?' + q(vars);
+    var snippet;
+    if (kind === 'block') {
+      snippet = '<iframe src="' + esc(url) + '" allow="microphone; clipboard-write" width="100%" height="' + h + '" style="border:0" title="' + esc(e.label) + '"></iframe>';
+      $('kindtag').textContent = 'iframe'; $('micnote').style.display = 'block';
+    } else {
+      var attrs = ' data-agent="' + esc(key) + '"';
+      if (vars.course_id) attrs += ' data-course-id="' + esc(vars.course_id) + '"';
+      if (vars.course_name) attrs += ' data-course-name="' + esc(vars.course_name) + '"';
+      if (vars.module) attrs += ' data-module="' + esc(vars.module) + '"';
+      if (vars.lang) attrs += ' data-lang="' + esc(vars.lang) + '"';
+      snippet = '<script src="' + BASE + 'loader.js"' + attrs + ' data-position="bottom-right" data-label="Ask the assistant" async><\/script>';
+      $('kindtag').textContent = 'script'; $('micnote').style.display = 'none';
+    }
+    $('out').textContent = snippet;
+    $('openlink').href = url;
+    $('preview').src = url;
+    $('agentinfo').innerHTML = e.label ? ('<b>' + esc(e.label) + '</b> -- provider: ' + esc(e.provider) + (e.courses ? ' -- used in: ' + esc(e.courses.join(', ')) : '')) : '';
+  }
+  fetch('registry.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (reg) {
+    REG = reg;
+    var sel = $('agent'); var tb = $('regtable').querySelector('tbody');
+    Object.keys(reg.agents).forEach(function (k) {
+      var e = reg.agents[k];
+      var o = document.createElement('option'); o.value = k; o.textContent = k + (e.status !== 'active' ? ' (' + e.status + ')' : '') + ' -- ' + e.label;
+      if (e.status === 'active') sel.appendChild(o);
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td><code class="inline">' + esc(k) + '</code>' + (k === reg['default'] ? ' <span class="tag">default</span>' : '') + '</td><td>' + esc(e.provider) + '</td><td>' + esc(e.status) + (e.redirect ? ' -> ' + esc(e.redirect) : '') + '</td><td>' + esc((e.aliases || []).join(', ')) + '</td><td>' + esc((e.courses || []).join(', ')) + '</td>';
+      tb.appendChild(tr);
+    });
+    sel.value = reg['default'];
+    render();
+  }).catch(function (err) { $('out').textContent = 'Could not load registry.json: ' + err; });
+  var HUBS = null;
+  function renderHub() {
+    if (!HUBS) return;
+    var hk = $('hub').value, h = HUBS.hubs[hk] || {};
+    var url = BASE + 'hub.html?' + q({ hub: hk, space: $('hubspace').value, course: $('hubcourse').value.trim() });
+    $('hubout').textContent = '<iframe src="' + esc(url) + '" width="100%" height="620" style="border:0" title="Cohort Hub"></iframe>';
+    $('hubinfo').innerHTML = 'Status now: <b>' + esc(h.status) + '</b>' + (h.status === 'active' ? ' -- opens ' + esc(h.baseUrl) : ' -- students see a friendly placeholder until you run <code class="inline">scripts/set-hub-url.ps1</code> and publish. The snippet never changes.');
+  }
+  fetch('hubs.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (cfg) {
+    HUBS = cfg; Object.keys(cfg.hubs || {}).forEach(function (k) { var o = document.createElement('option'); o.value = k; o.textContent = k + ' -- ' + (cfg.hubs[k].label || ''); $('hub').appendChild(o); });
+    renderHub();
+  }).catch(function () { $('hubout').textContent = 'Could not load hubs.json'; });
+  document.addEventListener('input', function () { render(); renderHub(); }); document.addEventListener('change', function () { render(); renderHub(); });
+  document.querySelectorAll('.btn.copy[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      navigator.clipboard.writeText($(b.getAttribute('data-copy')).textContent).then(function () {
+        var ok = $('ok-' + b.getAttribute('data-copy')); ok.classList.add('show'); setTimeout(function () { ok.classList.remove('show'); }, 1400);
+      });
+    });
+  });
+</script>
+</body>
+</html>

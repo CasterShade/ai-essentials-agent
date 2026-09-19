@@ -3,61 +3,62 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Essentials -- Talk to the Agent</title>
+    <meta name="robots" content="noindex" />
+    <title>Talk to the assistant</title>
     <style>
       html, body { margin: 0; padding: 0; height: 100%; background: transparent; overflow: hidden; }
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-      /* The widget itself is position:fixed inside its shadow root, so it always
-         covers the full iframe viewport. The sizing override below makes the
-         conversation sheet fill that space instead of floating at 400x550. */
+      body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      #agent-mount { position: absolute; inset: 0; }
+      #agent-mount > iframe { width: 100%; height: 100%; }
+      .notice { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 2147483000;
+        padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.4; display: none;
+        background: #fff7e6; color: #5c3d00; border: 1px solid #f0c36d; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+      .notice.error { background: #fdecea; color: #7a1f16; border-color: #f2a59d; }
+      .notice.info  { background: #eef4ff; color: #1f3a5f; border-color: #b9cdf0; }
+      #agent-debug { position: absolute; left: 8px; bottom: 8px; z-index: 2147483000; max-width: 60%; max-height: 45%;
+        overflow: auto; margin: 0; padding: 8px; font-size: 11px; background: rgba(15,22,34,.92); color: #e7edf5; border-radius: 8px; }
+      body[data-mode="full"][data-provider="elevenlabs"] #agent-mount { inset: 0; }
+      /* ---- activity bar (only when the entry defines contexts / client tools) ---- */
+      #agent-stage { position: absolute; left: 0; right: 0; top: 0; z-index: 2147483100; font-size: 14px; color: #12233a; }
+      #agent-stage:empty { display: none; }
+      .stage-bar { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 4px 10px 4px 14px; background: #1f3a5f; color: #fff; }
+      .stage-title { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+      .stage-kicker { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+      .stage-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .stage-dots { display: flex; gap: 5px; }
+      .stage-dots .dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.85); box-sizing: border-box; }
+      .stage-dots .dot.done { background: #f0b429; border-color: #f0b429; }
+      .stage-toggle { position: relative; appearance: none; border: 1px solid rgba(255,255,255,.45); background: transparent; color: #fff;
+        border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+      .stage-toggle:hover, .stage-toggle[aria-expanded="true"] { background: rgba(255,255,255,.16); }
+      .stage-toggle:focus-visible, .note-copy:focus-visible, .stage-link:focus-visible { outline: 2px solid #f0b429; outline-offset: 2px; }
+      .stage-badge { position: absolute; top: -6px; right: -4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+        background: #f0b429; color: #1b1f24; font-size: 10.5px; line-height: 16px; text-align: center; }
+      .stage-panel { position: absolute; left: 8px; right: 8px; top: 100%; margin-top: 6px; max-height: 70vh; overflow: auto; padding: 12px 14px;
+        background: #fff; border: 1px solid #d5dde8; border-radius: 12px; box-shadow: 0 10px 30px rgba(15,22,34,.22); }
+      .stage-panel[hidden], .stage-badge[hidden], .stage-toast[hidden] { display: none; }
+      .stage-steps { margin: 0 0 4px; padding-left: 22px; }
+      .stage-steps li { margin: 0 0 8px; line-height: 1.4; }
+      .stage-steps li.done span { color: #5b6470; text-decoration: line-through; }
+      .stage-steps label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+      .stage-steps input { margin-top: 3px; }
+      .note { position: relative; margin-top: 10px; padding: 10px 64px 10px 12px; background: #fff8e1; border: 1px solid #f0d58a; border-radius: 10px; }
+      .note-title { font-weight: 700; font-size: 12.5px; margin-bottom: 3px; }
+      .note-body { white-space: pre-wrap; word-break: break-word; line-height: 1.4; }
+      .note-copy { position: absolute; top: 8px; right: 8px; border: 1px solid #d9c27a; background: #fff; border-radius: 6px; font-size: 11.5px; padding: 3px 8px; cursor: pointer; }
+      .stage-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      .stage-links:empty, .stage-notes:empty { display: none; }
+      .stage-link { display: inline-block; padding: 7px 12px; border-radius: 8px; background: #1f3a5f; color: #fff; font-weight: 600; text-decoration: none; font-size: 13px; }
+      .stage-toast { position: absolute; right: 10px; top: calc(100% + 8px); padding: 6px 10px; border-radius: 8px; background: #0f1622; color: #fff; font-size: 12.5px; }
+      .stage-confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2147483200; }
+      body[data-stage="1"] .notice { top: calc(var(--agent-stage-h, 46px) + 8px); }
     </style>
   </head>
   <body>
-    <elevenlabs-convai
-      agent-id="agent_4001m269sgbaekjsmned83s8fy3d"
-      always-expanded="true"
-      show-resize-button="false"
-      placement="bottom"
-    ></elevenlabs-convai>
-    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-    <script>
-      // Make the ElevenLabs sheet take the entire block (like the old GPT Trainer embed).
-      // The widget renders into an open shadow root, so we drop an override stylesheet in there.
-      (function () {
-        var CSS = [
-          ':host{--el-overlay-padding:8px !important;}',
-          '.overlay{inset:8px !important;}',
-          '.sheet[data-variant]{width:100% !important;max-width:none !important;',
-          '  height:100% !important;max-height:none !important;margin:0 !important;}'
-        ].join('\n');
-        function inject(el) {
-          var root = el.shadowRoot;
-          if (!root) return false;
-          if (root.querySelector('style[data-fill-block]')) return true;
-          var s = document.createElement('style');
-          s.setAttribute('data-fill-block', '');
-          s.textContent = CSS;
-          root.appendChild(s);
-          return true;
-        }
-        function start() {
-          var el = document.querySelector('elevenlabs-convai');
-          if (!el) return;
-          if (inject(el)) return;
-          var tries = 0;
-          var t = setInterval(function () {
-            if (inject(el) || ++tries > 200) clearInterval(t);
-          }, 100);
-        }
-        if (window.customElements && customElements.whenDefined) {
-          customElements.whenDefined('elevenlabs-convai').then(start, start);
-        }
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', start);
-        } else {
-          start();
-        }
-      })();
-    </script>
+    <div id="agent-stage"></div>
+    <div id="agent-notice" class="notice" role="status" aria-live="polite"></div>
+    <div id="agent-mount"></div>
+    <script src="embed.js"></script>
+    <noscript>This assistant needs JavaScript.</noscript>
   </body>
 </html>

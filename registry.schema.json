@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://castershade.github.io/ai-essentials-agent/registry.schema.json",
+  "title": "Agent embed registry",
+  "type": "object",
+  "required": [
+    "version",
+    "default",
+    "fallback",
+    "providers",
+    "agents"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "updated": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "default": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fallback": {
+      "type": "string",
+      "minLength": 1
+    },
+    "providers": {
+      "type": "object",
+      "properties": {
+        "elevenlabs": {
+          "type": "object",
+          "required": [
+            "scriptUrl"
+          ],
+          "properties": {
+            "scriptUrl": {
+              "type": "string",
+              "pattern": "^https://"
+            }
+          }
+        },
+        "gpt-trainer": {
+          "type": "object",
+          "required": [
+            "widgetBase",
+            "bubbleScriptUrl"
+          ],
+          "properties": {
+            "widgetBase": {
+              "type": "string",
+              "pattern": "^https://"
+            },
+            "bubbleScriptUrl": {
+              "type": "string",
+              "pattern": "^https://"
+            }
+          }
+        }
+      }
+    },
+    "agents": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "label",
+          "provider",
+          "status"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "elevenlabs",
+              "gpt-trainer",
+              "url"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "redirect": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "full",
+              "bubble"
+            ]
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+            },
+            "uniqueItems": true
+          },
+          "agentId": {
+            "type": "string",
+            "pattern": "^agent_[A-Za-z0-9]+$"
+          },
+          "botUuid": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            }
+          },
+          "options": {
+            "type": "object"
+          },
+          "overrides": {
+            "type": "object",
+            "properties": {
+              "language": {
+                "type": "boolean"
+              },
+              "first-message": {
+                "type": "boolean"
+              },
+              "prompt": {
+                "type": "boolean"
+              },
+              "voice-id": {
+                "type": "boolean"
+              }
+            }
+          },
+          "owner": {
+            "type": "string"
+          },
+          "courses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stage": {
+            "type": "boolean",
+            "description": "false = never draw the activity bar for this agent (context variables are still sent)."
+          },
+          "clientTools": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "show_card",
+                "mark_step",
+                "celebrate",
+                "open_resource"
+              ]
+            },
+            "description": "On-screen helpers embed.js registers with the ElevenLabs widget. Each name must ALSO exist as a client tool on the agent, or it is simply never called."
+          },
+          "resources": {
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "label",
+                "url"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "url": {
+                  "type": "string",
+                  "pattern": "^https://"
+                }
+              }
+            },
+            "description": "The ONLY links the agent can put on a student's screen (open_resource)."
+          },
+          "contexts": {
+            "type": "object",
+            "required": [
+              "default"
+            ],
+            "propertyNames": {
+              "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "lesson",
+                "activity",
+                "opener"
+              ],
+              "properties": {
+                "lesson": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 90,
+                  "description": "Shown in the activity bar."
+                },
+                "kicker": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Small label above the title (default: Activity)."
+                },
+                "activity": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1200,
+                  "description": "What the agent is told this chat box is for. Sent as {{activity}}."
+                },
+                "opener": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 400,
+                  "description": "The agent's first line on this page. Sent as {{opener}}."
+                },
+                "steps": {
+                  "type": "array",
+                  "maxItems": 6,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  }
+                }
+              }
+            },
+            "description": "One entry per lesson activity, picked with ?module=<key>. 'default' is used when module is missing or unknown."
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "provider": {
+                  "const": "elevenlabs"
+                },
+                "status": {
+                  "const": "active"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "agentId"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "provider": {
+                  "const": "gpt-trainer"
+                },
+                "status": {
+                  "const": "active"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "botUuid"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "provider": {
+                  "const": "url"
+                },
+                "status": {
+                  "const": "active"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "url"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

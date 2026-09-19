@@ -1,0 +1,221 @@
+{
+  "$schema": "./registry.schema.json",
+  "version": 3,
+  "updated": "2026-09-18",
+  "notes": "Single source of truth for every course-embedded agent. Courses embed by KEY (never by raw provider id). To move a course to a new agent or provider, edit the entry here; to retire a key, set status=retired and point redirect at the replacement. Changes go live within ~10 minutes (GitHub Pages cache max-age=600). v3: an agent entry may carry `contexts` (one per lesson activity, picked with ?module=<key>), `clientTools` (on-screen helpers the agent may call) and `resources` (the only links the agent can put on screen). Cohort Hub links live in hubs.json.",
+  "default": "ai-essentials-hs",
+  "fallback": "ai-essentials-hs",
+  "providers": {
+    "elevenlabs": {
+      "scriptUrl": "https://unpkg.com/@elevenlabs/convai-widget-embed",
+      "note": "Unversioned URL per ElevenLabs docs (always latest widget). Pin to e.g. @0.18.2 here if a widget release ever breaks us -- one edit, every course follows."
+    },
+    "gpt-trainer": {
+      "widgetBase": "https://app.gpt-trainer.com/widget/",
+      "bubbleScriptUrl": "https://app.gpt-trainer.com/widget-asset.min.js"
+    }
+  },
+  "agents": {
+    "ai-essentials-hs": {
+      "label": "AI Essentials: Helping Local Businesses (High School Edition)",
+      "provider": "elevenlabs",
+      "agentId": "agent_4001m269sgbaekjsmned83s8fy3d",
+      "status": "active",
+      "mode": "full",
+      "aliases": [
+        "hs",
+        "ai-essentials",
+        "ai-essentials-agent"
+      ],
+      "variables": {
+        "course_id": "AI-ESS-HS",
+        "course_name": "AI Essentials: Helping Local Businesses (High School Edition)",
+        "module": "default",
+        "lang": "en",
+        "lesson": "AI Essentials (general help)",
+        "activity": "Open conversation. Help the student with anything from the course.",
+        "opener": "Hi, I am TutorBot, your AI study partner for this course. What are you working on?",
+        "steps": "No fixed steps for this chat."
+      },
+      "options": {
+        "variant": "full",
+        "placement": "bottom",
+        "always-expanded": "true",
+        "show-resize-button": "false",
+        "transcript": "true",
+        "text-input": "true"
+      },
+      "overrides": {
+        "language": false,
+        "first-message": false
+      },
+      "clientTools": [
+        "show_card",
+        "mark_step",
+        "celebrate",
+        "open_resource"
+      ],
+      "resources": {
+        "cohort-hub": {
+          "label": "Cohort Hub",
+          "url": "https://castershade.github.io/ai-essentials-agent/hub.html?hub=chah-2026"
+        },
+        "chatgpt": {
+          "label": "ChatGPT",
+          "url": "https://chatgpt.com/"
+        }
+      },
+      "contexts": {
+        "default": {
+          "lesson": "AI Essentials (general help)",
+          "title": "Ask TutorBot",
+          "activity": "Open conversation. Help the student with anything from the course. Ask which lesson they are on, then help from there.",
+          "opener": "Hi, I am TutorBot, your AI study partner for this course. What are you working on?",
+          "steps": []
+        },
+        "meet-tutorbot": {
+          "lesson": "Meet TutorBot",
+          "title": "Say hello to TutorBot",
+          "activity": "First conversation. The student is meeting you for the first time. Goals: (1) they say hello with their FIRST name only and one thing they are excited to learn, (2) they ask what to focus on in this course, (3) they tell you about a neighborhood business they picked as their case business and ask one way AI could help it. Keep it light and quick and make them feel capable. Mention once that they can talk or type. Never ask for a last name, school ID, phone number or any personal detail.",
+          "opener": "Hey, I am TutorBot, the AI study partner built into this course. You can talk to me or type. What is your first name, and what is one thing you are hoping to learn here?",
+          "steps": [
+            "Say hi: your first name and one thing you want to learn",
+            "Ask what to focus on most in this course",
+            "Tell TutorBot about the business you picked and ask one way AI could help it"
+          ]
+        },
+        "types-of-ai": {
+          "lesson": "AI Basics: Different Types of AI",
+          "title": "Which level of AI fits the business?",
+          "activity": "Lesson on the four levels of AI (beginner = the new employee, assistant = the reliable helper, real-world = the experienced manager, expert = the business partner) and on classic versus generative AI. The student tells you what kind of neighborhood business they picked, guesses which level of AI that business uses today, and decides which level would help it most and why. Ask them to commit to an answer before you give yours. Correct gently if they mix up classic and generative AI.",
+          "opener": "Let us figure out which level of AI fits a real business. What kind of business did you pick, and what AI, if any, do you think they use right now?",
+          "steps": [
+            "Describe the business you picked",
+            "Guess which level of AI they use today",
+            "Decide which level would help them most, and say why"
+          ]
+        },
+        "context-is-key": {
+          "lesson": "Creating with AI",
+          "title": "Add context to a prompt",
+          "activity": "Section 'Context is Key'. The student practices turning a vague prompt into a specific one by adding context: who it is for, what they have, the goal, the limits. The lesson's example is a dinner recipe prompt. Ask the student for a vague prompt first, improve it together, then have them rewrite it for the business they picked (a post, a flyer, a menu description). Give feedback in this pattern: one thing that works, one thing to add, then let them try again.",
+          "opener": "Let us practice adding context. Give me a short, vague prompt, like 'write a post for a bakery', and we will make it sharper together.",
+          "steps": [
+            "Write a vague prompt",
+            "Add context: who, what, goal, limits",
+            "Rewrite it for the business you picked"
+          ]
+        },
+        "positive-framing": {
+          "lesson": "Creating with AI",
+          "title": "Say what you want, not only what you do not want",
+          "activity": "Section 'Positive vs Negative Framing'. A negative-only prompt ('write a children's story without any animals') gives weak results; a positive prompt says what to include; the strongest prompt combines both. Have the student try one request three ways (only what to avoid, only what to include, both) and compare. Steer them toward a business example, such as a flyer that should feel friendly and bilingual and should not use slang.",
+          "opener": "Time to test framing. Tell me something you want written, and we will try it three ways: only what to avoid, only what to include, and both. Which one do you think will win?",
+          "steps": [
+            "Try a prompt that only says what to avoid",
+            "Try one that says what to include",
+            "Combine both and compare the results"
+          ]
+        },
+        "experiment": {
+          "lesson": "Creating with AI",
+          "title": "Improve a prompt in three rounds",
+          "activity": "Section 'Experimentation'. Prompting is trial and error: start simple, look at the output, revise, repeat. The lesson example refines a nature poem across three versions. Have the student start with a simple prompt, then revise it twice, each time saying what they changed and why. When they land a strong final prompt you may pin it with show_card so they can copy it into their prompt bank.",
+          "opener": "Let us run an experiment. Give me a simple first prompt. We will look at what comes back, then improve it twice. What is your starting prompt?",
+          "steps": [
+            "Start with a simple prompt",
+            "Revise it once and say what you changed",
+            "Revise it again and keep the best version"
+          ]
+        },
+        "customer-profile": {
+          "lesson": "Creating with AI",
+          "title": "Who are the customers?",
+          "activity": "Section 'Chat with TutorBot about the business you picked'. The student types the lesson's prompts one at a time: 'I work with a local ____ business in ____', then asks who the typical local customers are (ages, income levels, jobs), then what problems the business could solve for the local market. Build a short, realistic customer profile for that type of business in an upper Manhattan neighborhood. Say clearly that you are estimating, not citing data, and that the owner knows their customers better than any AI. At the end pin a 3 to 4 line customer profile with show_card: the student pastes it into the next activity.",
+          "opener": "Let us build a customer profile. Finish this sentence for me: I work with a local blank business in blank.",
+          "steps": [
+            "Tell TutorBot the type of business and the neighborhood",
+            "Ask who the typical customers are",
+            "Ask what problems the business could solve for them",
+            "Copy the customer profile for the next activity"
+          ]
+        },
+        "owner-roleplay": {
+          "lesson": "Meet the Businesses: What Washington Heights Owners Told Us",
+          "kicker": "Role-play",
+          "title": "Practice your first talk with an owner",
+          "activity": "ROLE-PLAY. You play Ms. Rivera, owner of a small, busy family restaurant in Washington Heights (an invented character, not a real business). She is friendly, short on time, a little unsure about AI, and drops in a Spanish word now and then. Her situation: great food and loyal regulars; an Instagram account nobody has posted on in months; many good food photos on her phone; a niece who holds the passwords and is always busy; the same phone questions about hours and catering all day. She does NOT want AI anywhere near the recipes or the cooking. Reveal details only when the student asks good questions. The student's job: introduce themselves, ask what matters most to the business right now, listen, and ask at least three questions before suggesting anything. If they jump straight to pitching tools, Ms. Rivera gets politely distracted by a customer. When the student says 'end role-play' (or after about eight exchanges) step out of character, say you are TutorBot again, and give feedback: two things they did well, one thing to try next time, and whether they asked what should stay human.",
+          "opener": "Role-play time. I will play Ms. Rivera, who owns a small restaurant in the Heights. You are the AI Integrator meeting her for the first time. Say 'end role-play' whenever you want feedback. Here we go. Hola, welcome in! Sorry, busy day. You are the student from the AI program, right?",
+          "steps": [
+            "Introduce yourself and say why you are there",
+            "Ask what matters most to the business right now",
+            "Ask at least three questions before you suggest anything",
+            "Ask what should stay human",
+            "Say 'end role-play' to get feedback"
+          ]
+        },
+        "chatbot-advice": {
+          "lesson": "AI ChatBots and Customer Service ChatBots",
+          "title": "Would a ChatBot help this business?",
+          "activity": "Lesson on ChatBots and customer service ChatBots: no-code platforms, AI-powered platforms, custom builds; choosing by budget, skills and goals. The student describes the business they picked and asks you for one ChatBot tool or strategy. Help them think like an advisor: which questions do customers ask again and again, who keeps the bot updated after the student leaves, what is the budget, what should stay human. Recommend starting small (an FAQ list, a Google Business Profile) before a paid bot when that fits. Do not endorse a specific paid product.",
+          "opener": "Let us think like an advisor. Tell me about the business you picked: what questions do you think customers ask them over and over?",
+          "steps": [
+            "Describe the business and its most common customer questions",
+            "Ask for one ChatBot idea that fits the budget",
+            "Decide what should stay human"
+          ]
+        },
+        "responsible-ai": {
+          "lesson": "Limitations and Responsibility with AI",
+          "title": "Talk it out: using AI responsibly",
+          "activity": "Lesson on limits and responsibility: bias, the cost of training, security, hallucinations, unpredictability, responsible use. The student shares one real concern about AI's impact on their community or on local businesses. Take it seriously; do not dismiss it and do not lecture. Help them connect it to something from the lesson, and end with one concrete habit they will keep as an AI Integrator (check facts, protect customer data, get the owner's OK before anything goes public, say what AI should not do).",
+          "opener": "This one is a real conversation. What is one thing about AI that worries you, for your community or for the businesses around you?",
+          "steps": [
+            "Share one concern about AI",
+            "Connect it to something from this lesson",
+            "Name one habit you will keep as an AI Integrator"
+          ]
+        },
+        "wrap-up": {
+          "lesson": "Course Conclusion",
+          "title": "Your first recommendation",
+          "activity": "End of course. The student prepares a three-line recommendation for the business they picked: (1) the ONE AI idea they would bring the owner first, (2) why it fits that business, (3) what should stay human. Coach them to keep it short, in plain words an owner would understand, no jargon. When it is ready, pin it with show_card and tell them to post it in the Cohort Hub under Wins and Shares; you may offer the Cohort Hub button with open_resource. When all steps are done, celebrate once.",
+          "opener": "You made it to the end. Let us turn what you learned into one recommendation. What business did you pick, and what is the first AI idea you would bring the owner?",
+          "steps": [
+            "Name the business and your one AI idea",
+            "Say why it fits this business",
+            "Say what should stay human",
+            "Post it in the Cohort Hub"
+          ]
+        }
+      },
+      "owner": "Zubair Khan (YU Global)",
+      "courses": [
+        "AI Essentials HS Edition (Thinkific/Rise)"
+      ]
+    },
+    "tutorbot-onla": {
+      "label": "YU Global Tutorbot (ONLA course agents)",
+      "provider": "gpt-trainer",
+      "botUuid": "67bad6076c0c4f36bed95eeee5ea6ce9",
+      "status": "active",
+      "mode": "full",
+      "aliases": [
+        "tutorbot"
+      ],
+      "variables": {
+        "course_id": "",
+        "course_name": ""
+      },
+      "options": {
+        "height": 600
+      },
+      "owner": "Zubair Khan (YU Global)",
+      "courses": [
+        "Buyer Behavior",
+        "Intro to Clinical Psychology",
+        "Social Media Marketing"
+      ]
+    }
+  }
+}
