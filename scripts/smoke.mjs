@@ -28,6 +28,12 @@ const check = (name, ok, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}  
 const open = async (query) => { const page = await ctx.newPage(); await page.goto(base + 'index.html' + query, { waitUntil: 'load' }); await page.waitForTimeout(300); return page; };
 const dbg = async (page) => JSON.parse(await page.locator('#agent-debug').textContent());
 
+// Cohort Hub fixtures. Tests describe BEHAVIOUR for a given config; they never depend on which state the
+// live hubs.json happens to be in (validate-registry.mjs checks that file's shape, and one check below
+// confirms the door obeys it).
+const HUB_PENDING = JSON.stringify({ version: 1, hubs: { 'chah-2026': { label: 'Hub', status: 'pending', baseUrl: '', cohort: 'chah-2026', defaultCourse: 'ai-essentials-hs', defaultSpace: 'question-box', pendingTitle: 'Your Cohort Hub opens at kickoff', pendingMessage: 'You will get your join code at the kickoff session.' } } });
+const HUB_ACTIVE = JSON.stringify({ version: 1, hubs: { 'chah-2026': { label: 'Hub', status: 'active', baseUrl: 'https://hub.example.test', cohort: 'chah-2026', defaultCourse: 'ai-essentials-hs', defaultSpace: 'question-box' } } });
+
 // 1. default -> ElevenLabs HS agent, full mode
 {
   const page = await open('?debug=1');
@@ -111,8 +117,23 @@ const dbg = async (page) => JSON.parse(await page.locator('#agent-debug').textCo
   const out2 = await page.locator('#out').textContent();
   check('builder offers the lesson activities and puts module= in the snippet', out2.includes('module=types-of-ai') && (await page.locator('#module_sel option').count()) >= 10 && (await page.locator('#ctxinfo').textContent()).includes('four levels'));
   const hubout = await page.locator('#hubout').textContent();
-  check('builder produces the Cohort Hub snippet through hub.html', hubout.includes('hub.html?hub=chah-2026') && hubout.includes('space=question-box') && (await page.locator('#hubinfo').textContent()).includes('pending'));
+  check('builder produces the Cohort Hub snippet through hub.html', hubout.includes('hub.html?hub=chah-2026') && hubout.includes('space=question-box'));
   await page.close();
+  // The snippet must be the same whether the hub is pending or live -- going live must never mean re-pasting
+  // a block in a course. These two checks use FIXTURES on purpose: a test that reads the live hubs.json
+  // asserts a deployment state, and fails the day that state changes (it did, on go-live night).
+  const snippets = {};
+  for (const [state, cfg] of Object.entries({ pending: HUB_PENDING, active: HUB_ACTIVE })) {
+    const b = await ctx.newPage();
+    await b.route(/hubs\.json/, (r) => r.fulfill({ contentType: 'application/json', body: cfg }));
+    await b.goto(base + 'builder.html', { waitUntil: 'load' });
+    await b.waitForTimeout(300);
+    const info = await b.locator('#hubinfo').textContent();
+    snippets[state] = await b.locator('#hubout').textContent();
+    check(`builder says the hub is ${state} when it is`, info.includes(state) && (state === 'active' ? info.includes('https://hub.example.test') : info.includes('placeholder')), info.slice(0, 90));
+    await b.close();
+  }
+  check('the hub snippet is identical before and after go-live', snippets.pending === snippets.active && snippets.pending.includes('hub.html?hub=chah-2026'));
 }
 
 // 9. lesson context: ?module=<key> tells the agent where it is and draws the activity bar
@@ -189,12 +210,26 @@ const dbg = async (page) => JSON.parse(await page.locator('#agent-debug').textCo
 // 14. Cohort Hub door: pending -> placeholder, active -> the frame is sent to the hosted hub
 {
   const page = await ctx.newPage();
+  await page.route(/hubs\.json/, (r) => r.fulfill({ contentType: 'application/json', body: HUB_PENDING }));
   await page.goto(base + 'hub.html?hub=chah-2026&space=question-box', { waitUntil: 'load' });
   await page.waitForTimeout(300);
-  check('pending hub shows the placeholder and stays put', (await page.locator('#hub-card').isVisible()) && (await page.locator('#hub-title').textContent()).length > 5 && page.url().includes('hub.html'));
+  check('pending hub shows the placeholder and stays put', (await page.locator('#hub-card').isVisible()) && (await page.locator('#hub-title').textContent()).includes('opens at kickoff') && page.url().includes('hub.html'));
   await page.close();
 
-  const activeCfg = JSON.stringify({ version: 1, hubs: { 'chah-2026': { label: 'Hub', status: 'active', baseUrl: 'https://hub.example.test', cohort: 'chah-2026', defaultCourse: 'ai-essentials-hs', defaultSpace: 'question-box' } } });
+  // The REAL hubs.json, whatever state it is in today: the door must do what the file says.
+  const live = JSON.parse(await readFile(join(root, 'hubs.json'), 'utf8'));
+  for (const [key, h] of Object.entries(live.hubs)) {
+    const lp = await ctx.newPage();
+    const went = [];
+    lp.on('request', (r) => { if (!r.url().startsWith(base)) went.push(r.url()); });
+    await lp.goto(base + 'hub.html?hub=' + encodeURIComponent(key), { waitUntil: 'load' }).catch(() => {});
+    await lp.waitForTimeout(400);
+    if (h.status === 'active') check(`live hubs.json: "${key}" is active and the door goes to its baseUrl`, (went[0] || '').startsWith(h.baseUrl + '/'), went[0]);
+    else check(`live hubs.json: "${key}" is ${h.status} and the door shows a card`, (await lp.locator('#hub-card').isVisible()) && went.length === 0);
+    await lp.close();
+  }
+
+  const activeCfg = HUB_ACTIVE;
   const seen = [];
   const p2 = await ctx.newPage();
   p2.on('request', (r) => { if (r.url().startsWith('https://hub.example.test')) seen.push(r.url()); });
