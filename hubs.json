@@ -1,17 +1,17 @@
 {
-  "version": 1,
-  "updated": "2026-09-18",
-  "notes": "Cohort Hub links. Courses embed hub.html?hub=<key>; this file says where that goes. status=pending shows a friendly placeholder; status=active sends the block to baseUrl. Set it with scripts/set-hub-url.ps1 (or .mjs), then publish. Live within ~10 minutes; nothing in any course changes.",
-  "hubs": {
-    "chah-2026": {
-      "label": "Cohort Hub -- CHAH AI Integrators 2026-27",
-      "status": "pending",
-      "baseUrl": "",
-      "cohort": "chah-2026",
-      "defaultCourse": "ai-essentials-hs",
-      "defaultSpace": "question-box",
-      "pendingTitle": "Your Cohort Hub opens at kickoff",
-      "pendingMessage": "This is where your cohort's Question Box, weekly prompt and Wins & Shares will live. You will get your join code at the kickoff session on Tuesday. Until then, bring your questions to TutorBot or to the Tuesday session."
-    }
-  }
+    "version":  1,
+    "updated":  "2026-09-21",
+    "notes":  "Cohort Hub links. Courses embed hub.html?hub=\u003ckey\u003e; this file says where that goes. status=pending shows a friendly placeholder; status=active sends the block to baseUrl. Set it with scripts/set-hub-url.ps1 (or .mjs), then publish. Live within ~10 minutes; nothing in any course changes.",
+    "hubs":  {
+                 "chah-2026":  {
+                                   "label":  "Cohort Hub -- CHAH AI Integrators 2026-27",
+                                   "status":  "active",
+                                   "baseUrl":  "https://cohort-hub.blueforest-9698367e.eastus.azurecontainerapps.io",
+                                   "cohort":  "chah-2026",
+                                   "defaultCourse":  "ai-essentials-hs",
+                                   "defaultSpace":  "question-box",
+                                   "pendingTitle":  "Your Cohort Hub opens at kickoff",
+                                   "pendingMessage":  "This is where your cohort\u0027s Question Box, weekly prompt and Wins \u0026 Shares will live. You will get your join code at the kickoff session on Tuesday. Until then, bring your questions to TutorBot or to the Tuesday session."
+                               }
+             }
 }
