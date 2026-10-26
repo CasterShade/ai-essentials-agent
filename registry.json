@@ -236,10 +236,6 @@
         "cohort-hub": {
           "label": "Cohort Hub: this week's post",
           "url": "https://castershade.github.io/ai-essentials-agent/hub.html?hub=chah-2026&space=this-week&course=prompt-engineering-hs"
-        },
-        "ai-lab": {
-          "label": "AI Lab (in the Cohort Hub)",
-          "url": "https://castershade.github.io/ai-essentials-agent/hub.html?hub=chah-2026&course=prompt-engineering-hs"
         }
       },
       "contexts": {
