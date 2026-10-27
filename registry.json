@@ -307,6 +307,17 @@
             "Post the prompt and the answer in the Cohort Hub (week 1)"
           ]
         },
+        "markdown": {
+          "lesson": "2.2 Markdown Formatting",
+          "title": "Format it so the owner can read it",
+          "activity": "Markdown formatting: the student writes a prompt for the business they are helping that uses five Markdown pieces: a ### header for the post or specials board, one **bold** line for the rule that must not be missed (hours, a price, a deadline), a numbered list for steps in order, a bulleted list for items (specials, prices), and the owner's own text (a review, a menu, a message) inside triple backticks so the AI treats it as material, not instructions. Read their prompt as Markdown. Say which of the five pieces are there and which are missing or broken (a # with no space after it, list items run together on one line, backticks that do not close). Then run the prompt and show the result. If the owner's text was not in backticks, show what goes wrong: treat one line of the review as an instruction, then explain why the backticks fix it. Keep every example about a small Washington Heights business; never invent facts about the student's business.",
+          "opener": "Show me a prompt for your owner written in Markdown: a header, one bold line, a numbered list, a bulleted list, and the owner's own text inside triple backticks. I will tell you what renders and what breaks, then run it.",
+          "steps": [
+            "Write the prompt with the five Markdown pieces",
+            "Fix what TutorBot says is broken",
+            "Run it and check the owner can read it"
+          ]
+        },
         "few-shot-reviews": {
           "lesson": "2.3 Few-Shot Learning",
           "title": "Answer reviews in the owner's voice",
